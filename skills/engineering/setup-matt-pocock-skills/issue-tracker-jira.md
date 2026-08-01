@@ -5,7 +5,8 @@ Issues and PRDs for this repo live as Jira Cloud work items. Use Atlassian's off
 ## Conventions
 
 - **Configuration**: site `<site>.atlassian.net`, project `<PROJECT>`, subtask type `<SUBTASK_TYPE>`, and resolved status `<DONE_STATUS>`. Read the project's actual values from Jira; status and type names are localised.
-- **Rich text**: When writing formatted Jira descriptions or comments, use raw ADF documents (`{"version":1,"type":"doc","content":[...]}`), never stringified or wrapped in a text node. Descriptions are capped at 32767 characters; keep an oversized spec in the repository and put a pointer to it in the description.
+- **Rich text**: When writing formatted Jira descriptions or comments, use raw ADF documents (`{"version":1,"type":"doc","content":[...]}`), never stringified or wrapped in a text node.
+- **Long bodies**: descriptions are capped at 32767 characters. Keep the head in the description and put each remaining part in a comment whose first line is `[continued n/N]`.
 - **Create an issue**: `acli jira workitem create --project <PROJECT> --type '<TYPE>' --summary '...' --description-file <FILE> [-l <LABEL>] --json`. `create` takes `-l`/`--label`; `edit` takes `--labels`.
 - **Read an issue**: `acli jira workitem view <KEY> --fields 'key,summary,status,assignee,labels,issuelinks' --json`. Always request only the fields needed.
 - **List issues**: `acli jira workitem search --jql '<JQL>' --fields 'key,summary' --limit 25 --json`. Bound the result. `search` serves `key`, `summary`, `description`, `status`, `labels` and `assignee`; read `parent`, `issuelinks`, `resolution` and `comment` with `view`. JQL clauses take any field — `parent = <KEY> AND resolution IS EMPTY` is valid.
@@ -16,6 +17,15 @@ Issues and PRDs for this repo live as Jira Cloud work items. Use Atlassian's off
 - **Unsupported operations**: When ACLI lacks a required operation or Jira rejects a field, report the exact limitation and use Jira Cloud REST API v3 for that narrow operation, disclosing the fallback.
 
 In a managed filesystem/process sandbox, run `acli jira ...` commands with narrowly scoped host access from the first command because ACLI OAuth credentials may live in an inaccessible OS credential store. Reuse the approved `["acli", "jira"]` prefix. A `failed to fetch work item details` error indicates an unauthenticated session rather than a bad key; confirm with `acli jira auth status` and re-authenticate with `acli jira auth login --web`.
+
+## Output shape
+
+`--json` output differs from the REST envelope.
+
+- `workitem search` returns an object whose keys are indices (`{"0": {...}, "1": {...}}`); read its values rather than an `issues` array. Treat a zero result count as a parsing mismatch until the raw top-level keys confirm it.
+- Each item carries its `key` alongside `fields`, not inside it.
+- `fields.description` is an ADF document node.
+- `fields.comment` is `{comments: [{author, body}]}`, each `body` an ADF document.
 
 ## When a skill says "publish to the issue tracker"
 
@@ -34,4 +44,4 @@ Used by `/wayfinder`. The **map** is a single work item with **child** work item
 - **Blocking**: Jira's native issue link — **inward blocks outward**. For a single edge where A blocks B, run `acli jira workitem link create --in <A> --out <B> --type 'Blocks' --yes`. For several edges, write them as JSON (`[{"inwardIssue":"<A>","outwardIssue":"<B>","type":"Blocks"}]`, schema from `link create --generate-json`) and apply them in one call with `link create --from-json <FILE> --yes`; the command confirms in plain text and ignores `--json`, so a file is more reliable than looping the flag form through a parser. Confirm every edge from `view --fields 'key,parent,labels,issuelinks' --json`, reading `type.inward` and `type.outward`. Correct a reversed edge with `link delete --id '<ID>[,<ID>]' --yes`, then re-apply it.
 - **Frontier query**: search `parent = <MAP_KEY> AND resolution IS EMPTY ORDER BY created ASC` with fields `key,summary`, `--limit 25`, and `--json`; inspect each candidate in turn with `view --fields 'key,status,assignee,issuelinks' --json`. Drop assigned tickets and tickets with unresolved inward `Blocks` links; outward links are downstream. First in map order wins. Stop when enough actionable candidates are found.
 - **Claim**: `acli jira workitem assign --key <KEY> --assignee '@me' --yes --json` — the session's first write. Re-read `key,assignee` and stop if it does not match the authenticated account.
-- **Resolve**: add the answer with `acli jira workitem comment create`, transition to the configured Done-category status, verify `status,resolution`, then re-read the latest map description before appending the context pointer to Decisions-so-far.
+- **Resolve**: add the answer with `acli jira workitem comment create` — the resolution is the last comment whose first line is not `[continued n/N]` — transition to the configured Done-category status, verify `status,resolution`, then re-read the latest map description before appending the context pointer to Decisions-so-far.
