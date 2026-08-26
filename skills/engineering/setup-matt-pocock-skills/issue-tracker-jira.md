@@ -9,7 +9,7 @@ Issues and PRDs for this repo live as Jira Cloud work items. Use Atlassian's off
 - **Long bodies**: descriptions are capped at 32767 characters. Keep the head in the description and put each remaining part in a comment whose first line is `[continued n/N]`.
 - **Create an issue**: `acli jira workitem create --project <PROJECT> --type '<TYPE>' --summary '...' --description-file <FILE> [-l <LABEL>] --json`. `create` takes `-l`/`--label`; `edit` takes `--labels`.
 - **Read an issue**: `acli jira workitem view <KEY> --fields 'key,summary,status,assignee,labels,issuelinks' --json`. Always request only the fields needed.
-- **List issues**: `acli jira workitem search --jql '<JQL>' --fields 'key,summary' --limit 25 --json`. Bound the result. `search` serves `key`, `summary`, `description`, `status`, `labels` and `assignee`; read `parent`, `issuelinks`, `resolution` and `comment` with `view`. JQL clauses take any field — `parent = <KEY> AND resolution IS EMPTY` is valid.
+- **List issues**: `acli jira workitem search --jql '<JQL>' --fields 'key,summary' --limit 25 --json`. Bound the result. `search` serves `key`, `summary`, `description`, `status`, `labels` and `assignee`; read `parent`, `issuelinks`, `resolution` and `comment` with `view`. A rejected field prints a plain-text error, not JSON. JQL clauses take any field — `parent = <KEY> AND resolution IS EMPTY` is valid.
 - **Comment on an issue**: `acli jira workitem comment create --key <KEY> --body-file <FILE> --json`.
 - **Apply / remove labels**: `acli jira workitem edit --key <KEY> --labels '<LABEL>' --yes --json` / `--remove-labels '<LABEL>'`.
 - **Assign**: `acli jira workitem assign --key <KEY> --assignee '@me' --yes --json`.
