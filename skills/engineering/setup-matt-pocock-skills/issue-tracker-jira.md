@@ -13,7 +13,7 @@ Issues and PRDs for this repo live as Jira Cloud work items. Use Atlassian's off
 - **Comment on an issue**: `acli jira workitem comment create --key <KEY> --body-file <FILE> --json`.
 - **Apply / remove labels**: `acli jira workitem edit --key <KEY> --labels '<LABEL>' --yes --json` / `--remove-labels '<LABEL>'`.
 - **Assign**: `acli jira workitem assign --key <KEY> --assignee '@me' --yes --json`.
-- **Close**: `acli jira workitem transition --key <KEY> --status '<DONE_STATUS>' --yes --json`.
+- **Close**: `acli jira workitem transition --key <KEY> --status '<DONE_STATUS>' --yes --json`. Read the target status name from the project (`view --fields status` on a closed ticket); a wrong name exits 0 with `{"status": "FAILURE", "message": "No allowed transitions found for given status"}`, so verify the transition by re-reading `status`.
 - **Unsupported operations**: When ACLI lacks a required operation or Jira rejects a field, report the exact limitation and use Jira Cloud REST API v3 for that narrow operation, disclosing the fallback.
 
 In a managed filesystem/process sandbox, run `acli jira ...` commands with narrowly scoped host access from the first command because ACLI OAuth credentials may live in an inaccessible OS credential store. Reuse the approved `["acli", "jira"]` prefix. A `failed to fetch work item details` error indicates an unauthenticated session rather than a bad key; confirm with `acli jira auth status` and re-authenticate with `acli jira auth login --web`.
@@ -22,7 +22,7 @@ In a managed filesystem/process sandbox, run `acli jira ...` commands with narro
 
 `--json` output differs from the REST envelope.
 
-- `workitem search` returns an object whose keys are indices (`{"0": {...}, "1": {...}}`); read its values rather than an `issues` array. Treat a zero result count as a parsing mismatch until the raw top-level keys confirm it.
+- `workitem search` returns a JSON array of items; iterate it directly (`for item in json.load(sys.stdin)`).
 - Each item carries its `key` alongside `fields`, not inside it.
 - `fields.description` is an ADF document node.
 - `fields.comment` is `{comments: [{author, body}]}`, each `body` an ADF document.
