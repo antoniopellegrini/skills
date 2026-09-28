@@ -45,7 +45,7 @@ The tracker options:
 | **Local markdown** | files under `.scratch/<feature>/` in this repo | nothing: no remote at all |
 | **Other** | wherever you say | one paragraph from you describing the workflow |
 
-The first four ship as templates in the skill and work out of the box. A Bitbucket remote proposes Jira; Jira Data Center and Server, which `acli` does not cover, go through "Other". Local markdown is a first-class option, not a fallback: a solo project with no remote is fully supported. One caveat is worth repeating: don't use local markdown if you're using GitHub. They are alternatives, not layers.
+The first four ship as templates in the skill and work out of the box. A Bitbucket remote proposes Jira. Local markdown is a first-class option, not a fallback: a solo project with no remote is fully supported. One caveat is worth repeating: don't use local markdown if you're using GitHub. They are alternatives, not layers.
 
 "Other" is not a stub either. It is the reason Linear, Azure DevOps and Beads all work: you describe the workflow, the skill records your prose in `docs/agents/issue-tracker.md`, and the downstream skills follow the prose. The community has already done this: a Jira-over-[MCP](https://www.aihero.dev/ai-coding-dictionary/mcp) variant from before the Jira template existed, a Gitea CLI shaped like `gh`, a hand-built local dashboard.
 
