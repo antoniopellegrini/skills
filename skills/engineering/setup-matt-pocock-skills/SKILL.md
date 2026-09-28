@@ -49,6 +49,8 @@ Default posture: these skills were designed for GitHub. If a `git remote` points
 
 Record the choice in `docs/agents/issue-tracker.md`. The GitHub and GitLab templates carry a "PRs as a request surface" flag, defaulted **off**. Leave it off and don't raise it: a user who wants external PRs in the triage queue can flip the flag in the file later.
 
+If the user picks Jira, fill the template's placeholders before writing: take the site from `acli jira auth status`, ask for the project key, and ask for the work item type, subtask type and Done status names (they are per-project and often localised; propose `Task`, `Subtask` and `Done`).
+
 **Section B: Triage label vocabulary.** Skip this section entirely if the `triage` skill isn't installed (exploration told you), since an uninstalled skill needs no labels.
 
 If it is installed, ask exactly one question:
